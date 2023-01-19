@@ -1,2 +1,5 @@
 # scs-pki-research
-PKI research material
+
+SCS PKI/CA research material
+
+nitroCA - demo CA. Not to be used in production!

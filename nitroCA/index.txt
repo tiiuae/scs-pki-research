@@ -1,0 +1,2 @@
+V	280112215218Z		54964C8E4C78F6AD6BD1A48D5D0A398E7C956680	unknown	/C=FI/ST=Uusimaa/O=Unikie Oy/OU=Unikie Oy Certificate Authority/CN=Unikie Oy Intermediate CA
+V	240113224856Z		54964C8E4C78F6AD6BD1A48D5D0A398E7C956681	unknown	/C=FI/ST=Uusimaa/O=Unikie Oy/OU=Unikie Oy Certificate Authority/CN=Unikie Oy Subordinate CA
