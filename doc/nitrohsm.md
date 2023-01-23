@@ -29,7 +29,19 @@ The CA will have the following directory structure:
  intermediate - intermediate CA CSRs and certificates
  subordinate - subordinate CA CSRs and certificates
 
-### CA Configuration
+### CA Configuration Parameters
+
+CA Configuration is done using openSSL configuration files. The syntax is very well explained in the man page, thus only brief description is provided in this document. For more details, please reffer to config man page:
+
+``` man 5 config ```
+
+The following configuration files were used
+
+  create_root_cert.ini - creating Root Certificate
+  create_intermediate_csr.ini - create CSR for the Intermediate Certificate
+  create_subordinate_csr.ini - create CSR for the Subordinate Certificate
+  sign_intermediate_csr.ini - sign the CSR of the Intermediate Certificate
+  sign_subordinate_csr.ini - sign the CSR of the Subordinate Certificate
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L4-L10
 
@@ -37,7 +49,7 @@ https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b1588
 
 Generate Root keypair on HSM
 
-```bash
+```
 $ pkcs11-tool --keypairgen --key-type EC:secp256r1 --label root --pin <hsmpin>
 
 Using slot 0 with a present token (0x0)
@@ -56,11 +68,9 @@ Public Key Object; EC  EC_POINT 256 bits
   Access:     none
 ```
 
-Create Root Certificate using 
+Create Root Certificate using create_root_cert.ini
 
-
-
-```bash
+```
 $ openssl req -config create_root_cert.ini -engine pkcs11 -keyform engine -key df797e0543b6a04c0bb96b8934770f5b1da8d624 -new -x509 -days 3650 -sha512 -extensions v3_ca -out ../certs/root.crt
 
 Engine "pkcs11" set.
@@ -104,3 +114,4 @@ Certificate:
         02:21:00:b0:16:6e:c6:b0:1d:06:43:ea:13:08:82:43:5a:0d:
         02:c9:a0:5c:4e:0c:6c:93:63:f0:ce:41:b2:d4:2a:30:fd
 ```
+
