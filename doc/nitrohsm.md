@@ -31,11 +31,11 @@ The CA will have the following directory structure:
 
 ### CA Configuration Parameters
 
-CA Configuration is done using openSSL configuration files. The syntax is very well explained in the man page, thus only brief description is provided in this document. For more details, please reffer to config man page:
+CA Configuration is done using openSSL configuration files. The syntax is very well explained in the man page, thus only brief description is provided in this document. For more details, please reffer to OpenSSL config man page:
 
 ``` man 5 config ```
 
-The following configuration files were used
+The following configuration files were created
 
   - create_root_cert.ini - creating Root Certificate
   - create_intermediate_csr.ini - create CSR for the Intermediate Certificate
@@ -43,11 +43,17 @@ The following configuration files were used
   - sign_intermediate_csr.ini - sign the CSR of the Intermediate Certificate
   - sign_subordinate_csr.ini - sign the CSR of the Subordinate Certificate
 
+#### CSR Configuration Files
+
 create_root_cert.ini is used to create the Root CA. Amongs others, it contains the following sections:
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L20-L26
 
 Defines the policy of the fields. 
+
+https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L28-L33
+
+default_md represents the default message digest algorithm. sha512 in this case.
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L35-L40
 
@@ -67,6 +73,8 @@ keyUsage is a multi-valued extension, indicating permitted key usages. The follo
   - digitalSignature - may be used to apply a digital signature
   - cRLSign - public key is used to verify signatures on revocation information, such as CRL
   - keyCertSign - public key is used to verify signatures on certificates
+
+#### Signing Configuration Files
 
 
 ### CA Creation Steps
