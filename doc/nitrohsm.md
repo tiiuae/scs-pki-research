@@ -37,11 +37,11 @@ CA Configuration is done using openSSL configuration files. The syntax is very w
 
 The following configuration files were used
 
-  create_root_cert.ini - creating Root Certificate
-  create_intermediate_csr.ini - create CSR for the Intermediate Certificate
-  create_subordinate_csr.ini - create CSR for the Subordinate Certificate
-  sign_intermediate_csr.ini - sign the CSR of the Intermediate Certificate
-  sign_subordinate_csr.ini - sign the CSR of the Subordinate Certificate
+  - create_root_cert.ini - creating Root Certificate
+  - create_intermediate_csr.ini - create CSR for the Intermediate Certificate
+  - create_subordinate_csr.ini - create CSR for the Subordinate Certificate
+  - sign_intermediate_csr.ini - sign the CSR of the Intermediate Certificate
+  - sign_subordinate_csr.ini - sign the CSR of the Subordinate Certificate
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L4-L10
 
