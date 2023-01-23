@@ -43,7 +43,31 @@ The following configuration files were used
   - sign_intermediate_csr.ini - sign the CSR of the Intermediate Certificate
   - sign_subordinate_csr.ini - sign the CSR of the Subordinate Certificate
 
-https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L4-L10
+create_root_cert.ini is used to create the Root CA. Amongs others, it contains the following sections:
+
+https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L20-L26
+
+Defines the policy of the fields. 
+
+https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L35-L40
+
+Defines Distinguished Name for the certificate to be created.
+
+https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L42-L46
+
+subjectKeyIdentifier is chosen to follow the process, specified in RFC 5280 section 4.2.1.2 (1):
+ The keyIdentifier is composed of the 160-bit SHA-1 hash of the value of the BIT STRING subjectPublicKey (excluding the tag, length, and number of unused bits). 
+
+authorityKeyIdentifier is chosen to copy SKID from the issuer certificate except if the issuer certifiate is the same as the current one and it is not self-signed. The hash of the public key related to the signing key is taken as fallback if the issuer certificate is the same as the current certificate. If no value can be obtained, an error is returned.
+
+basicConstraints is a multi-valued extension, indicating whether a certificate is a CA cetificate.
+
+keyUsage is a multi-valued extension, indicating permitted key usages. The following values are used in this CA:
+
+  - digitalSignature - may be used to apply a digital signature
+  - cRLSign - public key is used to verify signatures on revocation information, such as CRL
+  - keyCertSign - public key is used to verify signatures on certificates
+
 
 ### CA Creation Steps
 
