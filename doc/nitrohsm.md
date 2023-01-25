@@ -79,7 +79,7 @@ In case of signing configurations, basicConstraints contains pathlen parameter. 
 
 ### CA Creation Steps
 
-Generate Root keypair on HSM
+Generate Root secp256r1 (just for the demo) keypair on HSM
 
 ```
 $ pkcs11-tool --keypairgen --key-type EC:secp256r1 --label root --pin <hsmpin>
@@ -107,6 +107,11 @@ $ openssl req -config create_root_cert.ini -engine pkcs11 -keyform engine -key d
 
 Engine "pkcs11" set.
 Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
+```
+
+The contents can be displayed with the following openSSL command:
+
+```
 alex@alex-unikie:~/SCS/PKI/config$ openssl x509 -noout -text -in ../certs/root.crt 
 Certificate:
     Data:
@@ -147,3 +152,113 @@ Certificate:
         02:c9:a0:5c:4e:0c:6c:93:63:f0:ce:41:b2:d4:2a:30:fd
 ```
 
+Create keypair for the Intermediate CA
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ pkcs11-tool -l --keypairgen --key-type EC:secp256r1 --label intermediate
+Using slot 0 with a present token (0x0)
+Logging in to "SmartCard-HSM (UserPIN)".
+Please enter User PIN:
+Key pair generated:
+Private Key Object; EC
+  label:      intermediate
+  ID:         74941030853c16e9bc916f13c1afefaf097dc0d9
+  Usage:      sign, derive
+  Access:     none
+Public Key Object; EC  EC_POINT 256 bits
+  EC_POINT:   044104f065b5ecf77a5c9da0ed99b0a905644cfa94d05714220cb9608e6fbd6c2f49ff01531ae8692a0e8debb\
+6053c06409601d226a2333faeb9809092b6b09bc136d2
+  EC_PARAMS:  06082a8648ce3d030107
+  label:      intermediate
+  ID:         74941030853c16e9bc916f13c1afefaf097dc0d9
+  Usage:      verify, derive
+  Access:     none
+  
+```
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ openssl req -config create_intermediate_csr.ini -engine pkcs11 -keyform engine -key 74941030853c16e9bc916f13c1afefaf097dc0d9 -new -sha512 -out ../intermediate/csr/intermediate.csr
+
+Engine "pkcs11" set.
+Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN): 
+```
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ openssl req -text -noout -verify -in ../interme\
+diate/csr/intermediate.csr
+Certificate request self-signature verify OK
+Certificate Request:
+    Data:
+        Version: 1 (0x0)
+        Subject: C = FI, ST = Uusimaa, O = Unikie Oy, OU = Unikie Oy Certificate A\
+uthority, CN = Unikie Oy Intermediate CA
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:f0:65:b5:ec:f7:7a:5c:9d:a0:ed:99:b0:a9:05:
+                    64:4c:fa:94:d0:57:14:22:0c:b9:60:8e:6f:bd:6c:
+                    2f:49:ff:01:53:1a:e8:69:2a:0e:8d:eb:b6:05:3c:
+                    06:40:96:01:d2:26:a2:33:3f:ae:b9:80:90:92:b6:
+                    b0:9b:c1:36:d2
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        Attributes:
+            (none)
+            Requested Extensions:
+    Signature Algorithm: ecdsa-with-SHA512
+    Signature Value:
+        30:44:02:20:65:8b:06:ec:91:b0:24:52:af:ab:c8:b5:36:51:
+        74:de:c3:1f:6e:97:bf:7a:29:07:2c:8e:c3:ae:31:33:d7:42:
+        02:20:00:b7:69:a2:1b:57:13:89:9a:84:0c:96:01:35:e2:fd:
+        04:1d:a7:f3:4f:5f:3e:37:d4:35:f8:23:12:7c:8d:61
+```
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ openssl ca -config sign_intermediate_csr.ini -engine pkcs11 -keyform engine -extensions v3_intermediate_ca -days 1825 -notext -md sha512 -create_serial -in ../intermediate/csr/intermediate.csr -out ../intermediate/certs/intermediate.crt
+Engine "pkcs11" set.
+Using configuration from sign_intermediate_csr.ini
+Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
+Check that the request matches the signature
+Signature ok
+Certificate Details:
+        Serial Number:
+            54:96:4c:8e:4c:78:f6:ad:6b:d1:a4:8d:5d:0a:39:8e:7c:95:66:80
+        Validity
+            Not Before: Jan 13 21:52:18 2023 GMT
+            Not After : Jan 12 21:52:18 2028 GMT
+        Subject:
+            countryName               = FI
+            stateOrProvinceName       = Uusimaa
+            organizationName          = Unikie Oy
+            organizationalUnitName    = Unikie Oy Certificate Authority
+            commonName                = Unikie Oy Intermediate CA
+        X509v3 extensions:
+            X509v3 Subject Key Identifier:
+                68:31:ED:A8:D6:04:03:85:54:6B:2D:43:F8:3F:50:85:D0:8A:B5:C3
+            X509v3 Authority Key Identifier:
+                0B:70:A7:50:6A:74:EF:A9:3B:BA:32:69:58:71:E5:93:B5:FC:14:03
+            X509v3 Basic Constraints: critical
+                CA:TRUE, pathlen:1
+            X509v3 Key Usage: critical
+                Digital Signature, Certificate Sign, CRL Sign
+Certificate is to be certified until Jan 12 21:52:18 2028 GMT (1825 days)
+Sign the certificate? [y/n]:y
+
+
+1 out of 1 certificate requests certified, commit? [y/n]y
+Write out database with 1 new entries
+Data Base Updated
+```
+
+Verify Intermediate CA against Root CA
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ openssl verify -CAfile ../certs/root.crt ../intermediate/certs/intermediate.crt
+../intermediate/certs/intermediate.crt: OK
+```
+
+Create the certificate chain
+```
+alex@alex-unikie:~/SCS/PKI/config$ cat ../intermediate/certs/intermediate.crt ../certs/root.crt > ../intermediate/certs/chain.crt
+```
