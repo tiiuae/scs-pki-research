@@ -14,7 +14,7 @@ NitroHSM2 module supports the following algorithms:
  - secp 192, 256 and 521
 
 Curve25519 is not supported, which makes it harder to use it with NixOS.
-secp256 is used for the demonstration purposes, however, secp521 is recommended for production use, both for ECDSA signing and ECDH key agreement.
+secp256 is used for the demonstration purposes, however, secp521 is recommended for production use, both for EcDSA signing and ECDH key agreement.
 
 ### Demo CA Structure
 
@@ -31,7 +31,7 @@ The CA will have the following directory structure:
 
 ### CA Configuration Parameters
 
-CA Configuration is done using openSSL configuration files. The syntax is very well explained in the man page, thus only brief description is provided in this document. For more details, please reffer to [OpenSSL man page](https://www.openssl.org/docs/man3.1/man5/config.html "OpenSSL man page")
+CA Configuration is done using OpenSSL configuration files. The syntax is very well explained in the man page, thus only brief description is provided in this document. For more details, please refer to [OpenSSL man page](https://www.openssl.org/docs/man3.1/man5/config.html "OpenSSL man page")
 
 The following configuration files were created
 
@@ -41,7 +41,7 @@ The following configuration files were created
   - sign_intermediate_csr.ini - sign the CSR of the Intermediate Certificate
   - sign_subordinate_csr.ini - sign the CSR of the Subordinate Certificate
 
-create_root_cert.ini is used to create the Root CA. Amongs others, it contains the following sections:
+create_root_cert.ini is used to create the Root CA. Among st others, it contains the following sections:
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L20-L26
 
@@ -254,19 +254,17 @@ Sign the certificate? [y/n]:y
 Write out database with 1 new entries
 Data Base Updated
 ```
-
 Verify Intermediate CA against Root CA
 
 ```
 alex@alex-unikie:~/SCS/PKI/config$ openssl verify -CAfile ../certs/root.crt ../intermediate/certs/intermediate.crt
 ../intermediate/certs/intermediate.crt: OK
 ```
-
 Create the certificate chain (RootCA-IntermediateCA)
+
 ```
 alex@alex-unikie:~/SCS/PKI/config$ cat ../intermediate/certs/intermediate.crt ../certs/root.crt > ../intermediate/certs/chain.crt
 ```
-
 Create the Subordinate CA keypair
 
 ```
@@ -289,7 +287,6 @@ Public Key Object; EC  EC_POINT 256 bits
   Usage:      verify, derive
   Access:     none
 ```
-
 Create CSR for the Subordinate Certificate
 
 ```
@@ -297,7 +294,6 @@ alex@alex-unikie:~/SCS/PKI/config$ openssl req -config create_subordinate_csr.in
 Engine "pkcs11" set.
 Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
 ```
-
 Display the contents of the CSR
 
 ```
@@ -331,6 +327,7 @@ uthority, CN = Unikie Oy Subordinate CA
 ```
 
 Sign the Subordinate CSR -> Generate the Subordinate Certificate
+
 ```
 alex@alex-unikie:~/SCS/PKI/config$ openssl ca -config sign_subordinate_csr.ini -engine pkcs11 -keyform engine -extensions v3_subordinate_ca -days 365 -notext -md sha512 -create_serial -in ../subordinate/csr/subordinate.csr --out ../subordinate/certs/subordinate.crt
 Engine "pkcs11" set.
@@ -414,6 +411,7 @@ uthority, CN = Unikie Oy Subordinate CA
 ```
 
 Verify the Subordinate Certificate against the Certificate Chain (RootCA-IntermediateCA)
+
 ```
 alex@alex-unikie:~/SCS/PKI$ openssl verify -CAfile intermediate/certs/chain.crt subordinate/certs/subordinate.crt
 subordinate/certs/subordinate.crt: OK
