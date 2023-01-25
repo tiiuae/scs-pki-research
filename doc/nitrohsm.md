@@ -176,12 +176,16 @@ Public Key Object; EC  EC_POINT 256 bits
   
 ```
 
+Create Certificate Signing Request for Intermediate CA
+
 ```
 alex@alex-unikie:~/SCS/PKI/config$ openssl req -config create_intermediate_csr.ini -engine pkcs11 -keyform engine -key 74941030853c16e9bc916f13c1afefaf097dc0d9 -new -sha512 -out ../intermediate/csr/intermediate.csr
 
 Engine "pkcs11" set.
 Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN): 
 ```
+
+Display the contents of the CSR
 
 ```
 alex@alex-unikie:~/SCS/PKI/config$ openssl req -text -noout -verify -in ../interme\
@@ -213,6 +217,8 @@ uthority, CN = Unikie Oy Intermediate CA
         02:20:00:b7:69:a2:1b:57:13:89:9a:84:0c:96:01:35:e2:fd:
         04:1d:a7:f3:4f:5f:3e:37:d4:35:f8:23:12:7c:8d:61
 ```
+
+Sign the CSR -> Generate the Intermediate CA
 
 ```
 alex@alex-unikie:~/SCS/PKI/config$ openssl ca -config sign_intermediate_csr.ini -engine pkcs11 -keyform engine -extensions v3_intermediate_ca -days 1825 -notext -md sha512 -create_serial -in ../intermediate/csr/intermediate.csr -out ../intermediate/certs/intermediate.crt
@@ -258,7 +264,159 @@ alex@alex-unikie:~/SCS/PKI/config$ openssl verify -CAfile ../certs/root.crt ../i
 ../intermediate/certs/intermediate.crt: OK
 ```
 
-Create the certificate chain
+Create the certificate chain (RootCA-IntermediateCA)
 ```
 alex@alex-unikie:~/SCS/PKI/config$ cat ../intermediate/certs/intermediate.crt ../certs/root.crt > ../intermediate/certs/chain.crt
+```
+
+Create the Subordinate CA keypair
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ pkcs11-tool -l --keypairgen --key-type EC:secp256r1 --label subordinate
+Using slot 0 with a present token (0x0)
+Logging in to "SmartCard-HSM (UserPIN)".
+Please enter User PIN:
+Key pair generated:
+Private Key Object; EC
+  label:      subordinate
+  ID:         415f2f0588fbfd484f4e7026e30ee44178b6b952
+  Usage:      sign, derive
+  Access:     none
+Public Key Object; EC  EC_POINT 256 bits
+  EC_POINT:   044104d9e2f6624ef5f001ab6237f936a1a2f522d9fc5a1147a3738a713b2c33e204\
+3e8c85056d0312b51722059f9b1c7a6d136a1b5b1a308c5e3e7d978b8298aa83a0
+  EC_PARAMS:  06082a8648ce3d030107
+  label:      subordinate
+  ID:         415f2f0588fbfd484f4e7026e30ee44178b6b952
+  Usage:      verify, derive
+  Access:     none
+```
+
+Create CSR for the Subordinate Certificate
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ openssl req -config create_subordinate_csr.ini -engine pkcs11 -keyform engine -key 415f2f0588fbfd484f4e7026e30ee44178b6b952 -new -sha512 -out ../subordinate/csr/subordinate.csr
+Engine "pkcs11" set.
+Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
+```
+
+Display the contents of the CSR
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ openssl req -text -noout -verify -in ../subordinate/csr/subordinate.csr
+Certificate request self-signature verify OK
+Certificate Request:
+    Data:
+        Version: 1 (0x0)
+        Subject: C = FI, ST = Uusimaa, O = Unikie Oy, OU = Unikie Oy Certificate A\
+uthority, CN = Unikie Oy Subordinate CA
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:d9:e2:f6:62:4e:f5:f0:01:ab:62:37:f9:36:a1:
+                    a2:f5:22:d9:fc:5a:11:47:a3:73:8a:71:3b:2c:33:
+                    e2:04:3e:8c:85:05:6d:03:12:b5:17:22:05:9f:9b:
+                    1c:7a:6d:13:6a:1b:5b:1a:30:8c:5e:3e:7d:97:8b:
+                    82:98:aa:83:a0
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        Attributes:
+            (none)
+            Requested Extensions:
+    Signature Algorithm: ecdsa-with-SHA512
+    Signature Value:
+        30:44:02:20:58:ae:d5:39:ce:5d:b1:38:e9:f0:d1:c9:80:cd:
+        a1:80:c8:e8:94:74:57:a8:45:f0:e7:9d:f0:28:64:c9:c7:3e:
+        02:20:20:ad:f8:3a:41:00:fb:1c:36:e4:97:dc:ab:18:50:1b:
+        a2:2f:54:05:6f:e5:af:1d:79:fc:85:d7:56:e8:04:89
+```
+
+Sign the Subordinate CSR -> Generate the Subordinate Certificate
+```
+alex@alex-unikie:~/SCS/PKI/config$ openssl ca -config sign_subordinate_csr.ini -engine pkcs11 -keyform engine -extensions v3_subordinate_ca -days 365 -notext -md sha512 -create_serial -in ../subordinate/csr/subordinate.csr --out ../subordinate/certs/subordinate.crt
+Engine "pkcs11" set.
+Using configuration from sign_subordinate_csr.ini
+Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
+Check that the request matches the signature
+Signature ok
+Certificate Details:
+        Serial Number:
+            54:96:4c:8e:4c:78:f6:ad:6b:d1:a4:8d:5d:0a:39:8e:7c:95:66:81
+        Validity
+            Not Before: Jan 13 22:48:56 2023 GMT
+            Not After : Jan 13 22:48:56 2024 GMT
+        Subject:
+            countryName               = FI
+            stateOrProvinceName       = Uusimaa
+            organizationName          = Unikie Oy
+            organizationalUnitName    = Unikie Oy Certificate Authority
+            commonName                = Unikie Oy Subordinate CA
+        X509v3 extensions:
+            X509v3 Subject Key Identifier:
+                7B:E8:E7:24:96:A9:F1:E2:DF:6C:C6:FD:60:9B:16:FE:6F:25:EE:29
+            X509v3 Authority Key Identifier:
+                68:31:ED:A8:D6:04:03:85:54:6B:2D:43:F8:3F:50:85:D0:8A:B5:C3
+            X509v3 Basic Constraints: critical
+                CA:TRUE, pathlen:0
+            X509v3 Key Usage: critical
+                Digital Signature, Certificate Sign, CRL Sign
+Certificate is to be certified until Jan 13 22:48:56 2024 GMT (365 days)
+Sign the certificate? [y/n]:y
+
+
+1 out of 1 certificate requests certified, commit? [y/n]y
+Write out database with 1 new entries
+Data Base Updated
+```
+
+Display the contents of the Subordinate Certificate
+
+```
+alex@alex-unikie:~/SCS/PKI/config$ openssl x509 --noout -text -in ../subordinate/certs/subordinate.crt
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            54:96:4c:8e:4c:78:f6:ad:6b:d1:a4:8d:5d:0a:39:8e:7c:95:66:81
+        Signature Algorithm: ecdsa-with-SHA512
+        Issuer: C = FI, ST = Uusimaa, O = Unikie Oy, OU = Unikie Oy Certificate Au\
+thority, CN = Unikie Oy Intermediate CA
+        Validity
+            Not Before: Jan 13 22:48:56 2023 GMT
+            Not After : Jan 13 22:48:56 2024 GMT
+        Subject: C = FI, ST = Uusimaa, O = Unikie Oy, OU = Unikie Oy Certificate A\
+uthority, CN = Unikie Oy Subordinate CA
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub:
+                    04:d9:e2:f6:62:4e:f5:f0:01:ab:62:37:f9:36:a1:
+                    a2:f5:22:d9:fc:5a:11:47:a3:73:8a:71:3b:2c:33:
+                    e2:04:3e:8c:85:05:6d:03:12:b5:17:22:05:9f:9b:
+                    1c:7a:6d:13:6a:1b:5b:1a:30:8c:5e:3e:7d:97:8b:
+                    82:98:aa:83:a0
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+        X509v3 extensions:
+            X509v3 Subject Key Identifier:
+                7B:E8:E7:24:96:A9:F1:E2:DF:6C:C6:FD:60:9B:16:FE:6F:25:EE:29
+            X509v3 Authority Key Identifier:
+                68:31:ED:A8:D6:04:03:85:54:6B:2D:43:F8:3F:50:85:D0:8A:B5:C3
+            X509v3 Basic Constraints: critical
+                CA:TRUE, pathlen:0
+            X509v3 Key Usage: critical
+                Digital Signature, Certificate Sign, CRL Sign
+    Signature Algorithm: ecdsa-with-SHA512
+    Signature Value:
+        30:45:02:20:3c:8c:a7:b3:c8:7d:c1:62:1e:a5:55:ca:67:93:
+        09:ba:aa:87:da:df:23:70:da:cd:54:d2:33:ba:d9:04:84:5b:
+        02:21:00:ab:72:9d:6e:81:ba:80:ea:be:f7:3f:53:e7:f9:b4:
+        4e:f1:74:36:1a:40:c9:c4:05:78:6a:8a:4c:1b:c9:3c:b4
+```
+
+Verify the Subordinate Certificate against the Certificate Chain (RootCA-IntermediateCA)
+```
+alex@alex-unikie:~/SCS/PKI$ openssl verify -CAfile intermediate/certs/chain.crt subordinate/certs/subordinate.crt
+subordinate/certs/subordinate.crt: OK
 ```
