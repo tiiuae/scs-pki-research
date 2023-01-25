@@ -18,7 +18,7 @@ secp256 is used for the demonstration purposes, however, secp521 is recommended 
 
 ### Demo CA Structure
 
-The CA follows the three-tier CA from the ![Ghaf PKI document](https://tiiuae.github.io/ghaf/scs/pki.html "Ghaf PKI document"). 
+The CA follows the three-tier CA from the [Ghaf PKI document](https://tiiuae.github.io/ghaf/scs/pki.html "Ghaf PKI document"). 
 
 ![Ghaf PKI](https://tiiuae.github.io/ghaf/img/ca_implementation.drawio.png "Ghaf PKI")
 
