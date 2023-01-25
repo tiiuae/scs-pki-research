@@ -43,8 +43,6 @@ The following configuration files were created
   - sign_intermediate_csr.ini - sign the CSR of the Intermediate Certificate
   - sign_subordinate_csr.ini - sign the CSR of the Subordinate Certificate
 
-#### CSR Configuration Files
-
 create_root_cert.ini is used to create the Root CA. Amongs others, it contains the following sections:
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L20-L26
@@ -74,7 +72,9 @@ keyUsage is a multi-valued extension, indicating permitted key usages. The follo
   - cRLSign - public key is used to verify signatures on revocation information, such as CRL
   - keyCertSign - public key is used to verify signatures on certificates
 
-#### Signing Configuration Files
+https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/sign_intermediate_csr.ini#L36
+
+In case of signing configurations, basicConstraints contains pathlen parameter. It defines how many certificates can be below the current certificate. In case of intermediate certificate the pathlen is 1, whereas in case of subordinate it is 0. Thus, subordinate certificate can not be used to sign certificates.
 
 
 ### CA Creation Steps
