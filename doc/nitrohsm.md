@@ -31,9 +31,7 @@ The CA will have the following directory structure:
 
 ### CA Configuration Parameters
 
-CA Configuration is done using openSSL configuration files. The syntax is very well explained in the man page, thus only brief description is provided in this document. For more details, please reffer to OpenSSL config man page:
-
-``` man 5 config ```
+CA Configuration is done using openSSL configuration files. The syntax is very well explained in the man page, thus only brief description is provided in this document. For more details, please reffer to [OpenSSL man page](https://www.openssl.org/docs/man3.1/man5/config.html "OpenSSL man page")
 
 The following configuration files were created
 
