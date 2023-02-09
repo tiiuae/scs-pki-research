@@ -1,12 +1,12 @@
-# NitroHSM Usage guideline
+# Nitrokey HSM 2 Usage Guideline
 
 ## Creating CA Fast Forward
 
-This article demonstrates the process of creating 3 Tier CA backed by NitroHSM 2. Which means that all of the private keys will be created and stored on HSM, thus keeping them secure. The certificate chain can be kept public in such case.
+This article demonstrates the process of creating 3 Tier CA backed by Nitrokey HSM 2. That means all private keys will be created and stored on an HSM, thus keeping them secure. The certificate chain can be made public in such case.
 
 ### Cryptography
 
-NitroHSM2 module supports the following algorithms:
+Nitrokey HSM 2 module supports the following algorithms:
 
  - rsa 1024, 2048, 3072 and 4096
  - NIST-P 192, 256 and 384-521
@@ -18,22 +18,22 @@ secp256 is used for the demonstration purposes, however, secp521 is recommended 
 
 ### Demo CA Structure
 
-The CA follows the three-tier CA from the [Ghaf PKI document](https://tiiuae.github.io/ghaf/scs/pki.html "Ghaf PKI document"). 
+The CA follows the Ghaf three-tier CA structure. For more information, see the [Public Key Infrastructure](https://tiiuae.github.io/ghaf/scs/pki.html "Ghaf PKI Description") section of the Ghaf documentation. 
 
 ![Ghaf PKI](https://tiiuae.github.io/ghaf/img/ca_implementation.drawio.png "Ghaf PKI")
 
 The CA will have the following directory structure:
 
- certs - root CA
- config - configuration files for certificate creation and signing
- intermediate - intermediate CA CSRs and certificates
- subordinate - subordinate CA CSRs and certificates
+  - certs — root CA
+  - config — configuration files for certificate creation and signing
+  - intermediate — intermediate CA CSRs and certificates
+  - subordinate — subordinate CA CSRs and certificates
 
 ### CA Configuration Parameters
 
-CA Configuration is done using OpenSSL configuration files. The syntax is very well explained in the man page, thus only brief description is provided in this document. For more details, please refer to [OpenSSL man page](https://www.openssl.org/docs/man3.1/man5/config.html "OpenSSL man page")
+CA Configuration is done using OpenSSL configuration files. For more information on syntax and additional descriptions, see [OpenSSL config description](https://www.openssl.org/docs/man3.1/man5/config.html "OpenSSL config description")
 
-The following configuration files were created
+The following configuration files were created:
 
   - create_root_cert.ini - creating Root Certificate
   - create_intermediate_csr.ini - create CSR for the Intermediate Certificate
@@ -43,21 +43,23 @@ The following configuration files were created
 
 create_root_cert.ini is used to create the Root CA. Among st others, it contains the following sections:
 
+policy_strict defines the policy of the fields: 
+
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L20-L26
 
-Defines the policy of the fields. 
+req defines general requirements, for example default_md represents the default message digest algorithm. sha512 in this case:
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L28-L33
 
-default_md represents the default message digest algorithm. sha512 in this case.
+req_distinguished_name Defines Distinguished Name for the certificate to be created:
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L35-L40
 
-Defines Distinguished Name for the certificate to be created.
+v3_ca defines parameters such as subjectKeyIdentifier, authorityKeyIdentifier, basicConstraints, keyUsage, etc:
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/create_root_cert.ini#L42-L46
 
-subjectKeyIdentifier is chosen to follow the process, specified in RFC 5280 section 4.2.1.2 (1):
+subjectKeyIdentifier is chosen to follow the process, specified in [RFC 5280 section 4.2.1.2](https://www.rfc-editor.org/rfc/rfc5280#section-4.2.1.2 "RFC 5280 section 4.2.1.2") (1):
  The keyIdentifier is composed of the 160-bit SHA-1 hash of the value of the BIT STRING subjectPublicKey (excluding the tag, length, and number of unused bits). 
 
 authorityKeyIdentifier is chosen to copy SKID from the issuer certificate except if the issuer certifiate is the same as the current one and it is not self-signed. The hash of the public key related to the signing key is taken as fallback if the issuer certificate is the same as the current certificate. If no value can be obtained, an error is returned.
@@ -72,12 +74,12 @@ keyUsage is a multi-valued extension, indicating permitted key usages. The follo
 
 https://github.com/tiiuae/scs-pki-research/blob/4ea9d818c62f8a0e5eada41fba0b15888651c538/nitroCA/config/sign_intermediate_csr.ini#L36
 
-In case of signing configurations, basicConstraints contains pathlen parameter. It defines how many certificates can be below the current certificate. In case of intermediate certificate the pathlen is 1, whereas in case of subordinate it is 0. Thus, subordinate certificate can not be used to sign certificates.
+In the case of signing configurations, basicConstraints contains pathlen parameter. It defines how many certificates can be below the current certificate. In case of intermediate certificate the pathlen is 1, whereas in case of subordinate it is 0. Thus, a subordinate certificate can not be used to sign certificates.
 
 
 ### CA Creation Steps
 
-Generate Root secp256r1 (just for the demo) keypair on HSM
+Generate Root secp256r1 (just for the demo) keypair on HSM:
 
 ```
 $ pkcs11-tool --keypairgen --key-type EC:secp256r1 --label root --pin <hsmpin>
@@ -98,7 +100,7 @@ Public Key Object; EC  EC_POINT 256 bits
   Access:     none
 ```
 
-Create Root Certificate using create_root_cert.ini
+Create Root Certificate using create_root_cert.ini:
 
 ```
 $ openssl req -config create_root_cert.ini -engine pkcs11 -keyform engine -key df797e0543b6a04c0bb96b8934770f5b1da8d624 -new -x509 -days 3650 -sha512 -extensions v3_ca -out ../certs/root.crt
@@ -110,7 +112,7 @@ Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
 The contents can be displayed with the following openSSL command:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl x509 -noout -text -in ../certs/root.crt 
+$ openssl x509 -noout -text -in ../certs/root.crt 
 Certificate:
     Data:
         Version: 3 (0x2)
@@ -150,10 +152,11 @@ Certificate:
         02:c9:a0:5c:4e:0c:6c:93:63:f0:ce:41:b2:d4:2a:30:fd
 ```
 
-Create keypair for the Intermediate CA
+Create keypair for the Intermediate CA:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ pkcs11-tool -l --keypairgen --key-type EC:secp256r1 --label intermediate
+$ pkcs11-tool -l --keypairgen --key-type EC:secp256r1 --label intermediate
+
 Using slot 0 with a present token (0x0)
 Logging in to "SmartCard-HSM (UserPIN)".
 Please enter User PIN:
@@ -174,20 +177,19 @@ Public Key Object; EC  EC_POINT 256 bits
   
 ```
 
-Create Certificate Signing Request for Intermediate CA
+Create Certificate Signing Request for Intermediate CA:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl req -config create_intermediate_csr.ini -engine pkcs11 -keyform engine -key 74941030853c16e9bc916f13c1afefaf097dc0d9 -new -sha512 -out ../intermediate/csr/intermediate.csr
+$ openssl req -config create_intermediate_csr.ini -engine pkcs11 -keyform engine -key 74941030853c16e9bc916f13c1afefaf097dc0d9 -new -sha512 -out ../intermediate/csr/intermediate.csr
 
 Engine "pkcs11" set.
 Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN): 
 ```
 
-Display the contents of the CSR
+Display the contents of the CSR:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl req -text -noout -verify -in ../interme\
-diate/csr/intermediate.csr
+$ openssl req -text -noout -verify -in ../intermediate/csr/intermediate.csr
 Certificate request self-signature verify OK
 Certificate Request:
     Data:
@@ -216,10 +218,10 @@ uthority, CN = Unikie Oy Intermediate CA
         04:1d:a7:f3:4f:5f:3e:37:d4:35:f8:23:12:7c:8d:61
 ```
 
-Sign the CSR -> Generate the Intermediate CA
+Sign the CSR -> Generate the Intermediate CA:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl ca -config sign_intermediate_csr.ini -engine pkcs11 -keyform engine -extensions v3_intermediate_ca -days 1825 -notext -md sha512 -create_serial -in ../intermediate/csr/intermediate.csr -out ../intermediate/certs/intermediate.crt
+$ openssl ca -config sign_intermediate_csr.ini -engine pkcs11 -keyform engine -extensions v3_intermediate_ca -days 1825 -notext -md sha512 -create_serial -in ../intermediate/csr/intermediate.csr -out ../intermediate/certs/intermediate.crt
 Engine "pkcs11" set.
 Using configuration from sign_intermediate_csr.ini
 Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
@@ -254,21 +256,21 @@ Sign the certificate? [y/n]:y
 Write out database with 1 new entries
 Data Base Updated
 ```
-Verify Intermediate CA against Root CA
+Verify Intermediate CA against Root CA:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl verify -CAfile ../certs/root.crt ../intermediate/certs/intermediate.crt
+$ openssl verify -CAfile ../certs/root.crt ../intermediate/certs/intermediate.crt
 ../intermediate/certs/intermediate.crt: OK
 ```
-Create the certificate chain (RootCA-IntermediateCA)
+Create the certificate chain (RootCA-IntermediateCA):
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ cat ../intermediate/certs/intermediate.crt ../certs/root.crt > ../intermediate/certs/chain.crt
+$ cat ../intermediate/certs/intermediate.crt ../certs/root.crt > ../intermediate/certs/chain.crt
 ```
-Create the Subordinate CA keypair
+Create the Subordinate CA keypair:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ pkcs11-tool -l --keypairgen --key-type EC:secp256r1 --label subordinate
+$ pkcs11-tool -l --keypairgen --key-type EC:secp256r1 --label subordinate
 Using slot 0 with a present token (0x0)
 Logging in to "SmartCard-HSM (UserPIN)".
 Please enter User PIN:
@@ -287,17 +289,17 @@ Public Key Object; EC  EC_POINT 256 bits
   Usage:      verify, derive
   Access:     none
 ```
-Create CSR for the Subordinate Certificate
+Create CSR for the Subordinate Certificate:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl req -config create_subordinate_csr.ini -engine pkcs11 -keyform engine -key 415f2f0588fbfd484f4e7026e30ee44178b6b952 -new -sha512 -out ../subordinate/csr/subordinate.csr
+$ openssl req -config create_subordinate_csr.ini -engine pkcs11 -keyform engine -key 415f2f0588fbfd484f4e7026e30ee44178b6b952 -new -sha512 -out ../subordinate/csr/subordinate.csr
 Engine "pkcs11" set.
 Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
 ```
-Display the contents of the CSR
+Display the contents of the CSR:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl req -text -noout -verify -in ../subordinate/csr/subordinate.csr
+$ openssl req -text -noout -verify -in ../subordinate/csr/subordinate.csr
 Certificate request self-signature verify OK
 Certificate Request:
     Data:
@@ -326,10 +328,10 @@ uthority, CN = Unikie Oy Subordinate CA
         a2:2f:54:05:6f:e5:af:1d:79:fc:85:d7:56:e8:04:89
 ```
 
-Sign the Subordinate CSR -> Generate the Subordinate Certificate
+Sign the Subordinate CSR -> Generate the Subordinate Certificate:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl ca -config sign_subordinate_csr.ini -engine pkcs11 -keyform engine -extensions v3_subordinate_ca -days 365 -notext -md sha512 -create_serial -in ../subordinate/csr/subordinate.csr --out ../subordinate/certs/subordinate.crt
+$ openssl ca -config sign_subordinate_csr.ini -engine pkcs11 -keyform engine -extensions v3_subordinate_ca -days 365 -notext -md sha512 -create_serial -in ../subordinate/csr/subordinate.csr --out ../subordinate/certs/subordinate.crt
 Engine "pkcs11" set.
 Using configuration from sign_subordinate_csr.ini
 Enter PKCS#11 token PIN for SmartCard-HSM (UserPIN):
@@ -365,10 +367,10 @@ Write out database with 1 new entries
 Data Base Updated
 ```
 
-Display the contents of the Subordinate Certificate
+Display the contents of the Subordinate Certificate:
 
 ```
-alex@alex-unikie:~/SCS/PKI/config$ openssl x509 --noout -text -in ../subordinate/certs/subordinate.crt
+$ openssl x509 --noout -text -in ../subordinate/certs/subordinate.crt
 Certificate:
     Data:
         Version: 3 (0x2)
@@ -410,9 +412,9 @@ uthority, CN = Unikie Oy Subordinate CA
         4e:f1:74:36:1a:40:c9:c4:05:78:6a:8a:4c:1b:c9:3c:b4
 ```
 
-Verify the Subordinate Certificate against the Certificate Chain (RootCA-IntermediateCA)
+Verify the Subordinate Certificate against the Certificate Chain (RootCA-IntermediateCA):
 
 ```
-alex@alex-unikie:~/SCS/PKI$ openssl verify -CAfile intermediate/certs/chain.crt subordinate/certs/subordinate.crt
+$ openssl verify -CAfile intermediate/certs/chain.crt subordinate/certs/subordinate.crt
 subordinate/certs/subordinate.crt: OK
 ```
