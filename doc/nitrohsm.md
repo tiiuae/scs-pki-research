@@ -1,3 +1,13 @@
+<!-- 
+# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# SPDX-License-Identifier: Apache-2.0
+-->
+
+<!--
+    Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+    SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 # Nitrokey HSM 2 Usage Guideline
 
 ## Creating CA Fast Forward
