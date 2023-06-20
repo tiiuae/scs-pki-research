@@ -1,15 +1,5 @@
 #!/bin/bash
 
-#docker run -d --privileged --device=/dev/bus/usb/003/012 -p 2222:22 yubikey-ssh-pcscd
-
-
-#docker run --privileged -v /var/run/pcscd:/var/run/pcscd -v /tmp/testfolder:/myshare --device=/dev/bus/usb/003/002 -it yubikey /bin/bash
-
-# ssh root@localhost -p 2222
-# pkcs11 --sign --id 02 --input-file input.bin --output-file data.sig --pin 81728172
-# pkcs11 --verify --id 02 --input-file input.bin --signature-file data.sig
-
-
 if [ -z "$1" ]; then
     echo "Usage: $0 [OPT...] CMD"
     echo ""
@@ -63,13 +53,12 @@ if [[ -n "$yubikey_info" ]]; then
   usb_bus=$(echo "$yubikey_info" | cut -d ' ' -f 1)
   usb_device=$(echo "$yubikey_info" | cut -d ' ' -f 2)
 
-  #  echo "YubiKey found on USB Bus: $usb_bus, Device: $usb_device"
+  echo "YubiKey found on USB Bus: $usb_bus, Device: $usb_device"
   if [ ! -z "$SIGN" ]; then
       if [ -z "$HASHGIVEN" ]; then
       	 echo "No hash given!"
 	 exit 1
       fi
-#      echo "SIGNING!"
       docker run --device=/dev/bus/usb/$usb_bus/$usb_device -it yubikey ./sign.sh $HASH
       exit $?
   fi
@@ -79,7 +68,6 @@ if [[ -n "$yubikey_info" ]]; then
 	  "No hash or signature given!"
 	  exit 1
       fi
-      echo "VERIFYING!"
       docker run --device=/dev/bus/usb/$usb_bus/$usb_device -i yubikey /bin/bash -c "./verify.sh $HASH $SGN"
       exit $?
   fi

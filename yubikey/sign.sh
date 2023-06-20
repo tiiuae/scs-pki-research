@@ -1,6 +1,4 @@
 #!/bin/bash
-#sha256sum /myshare/$1 > test.txt
-#awk '{print $1}' test.txt > digest.txt
 
 echo $1 > digest.txt
 xxd -r -p digest.txt digest.bin
