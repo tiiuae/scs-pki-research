@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2023 Technology Innovation Institute (TII)
+# SPDX-License-Identifier: Apache-2.0
+
 echo "$2"==== | fold -w 4 | sed '$ d' | tr -d '\n' | base64 --decode > signature.bin
 echo "-------------"
 echo Hash:

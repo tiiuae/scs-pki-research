@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: 2023 Technology Innovation Institute (TII)
+# SPDX-License-Identifier: Apache-2.0
+
 echo $1 > digest.txt
 xxd -r -p digest.txt digest.bin
 

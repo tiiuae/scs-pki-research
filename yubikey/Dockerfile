@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Technology Innovation Institute (TII)
+# SPDX-License-Identifier: Apache-2.0
+
 FROM ubuntu:latest
 
 RUN apt-get update && apt-get install -y apt-transport-https
