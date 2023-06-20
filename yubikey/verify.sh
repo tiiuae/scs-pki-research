@@ -4,10 +4,18 @@
 # 1 - hash
 # 2 - signature in b64 format
 
-echo $1 > digest.txt
-echo $2 > data.sig
-cat data.sig
-base64 -d data.sig > signature.bin
+#echo $0 > digest.txt
+#cat - > signature.b64
+#cat mysig.b64 > signature.b64
+#base64 -d signature.b64
+#echo "Signature:"
+#sig=`cat signature.b64`
+echo "$2"==== | fold -w 4 | sed '$ d' | tr -d '\n' | base64 --decode > signature.bin
+echo "-------------"
+#base64 -d signature.b64 
+echo Hash:
+echo $1 > digest.hex
+cat digest.hex
 
-xxd -r -p digest.txt digest.bin
+xxd -r -p digest.hex digest.bin
 pkcs11-tool --verify --id 02 --input-file digest.bin --signature-file signature.bin --pin 81728172
