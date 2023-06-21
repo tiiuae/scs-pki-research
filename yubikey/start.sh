@@ -32,6 +32,9 @@ while [[ $1 == --* ]]; do
     --verify)
 	VERIFY=1
     ;;
+    --bash)
+	BSH=1
+    ;;
     --h=*)
 	HASH="${1##--h=}"
 	HASHGIVEN=1
@@ -56,7 +59,7 @@ if [[ -n "$yubikey_info" ]]; then
   usb_bus=$(echo "$yubikey_info" | cut -d ' ' -f 1)
   usb_device=$(echo "$yubikey_info" | cut -d ' ' -f 2)
 
-  echo "YubiKey found on USB Bus: $usb_bus, Device: $usb_device"
+  echo "YubiKey found on a USB Bus: $usb_bus, Device: $usb_device"
   if [ ! -z "$SIGN" ]; then
       if [ -z "$HASHGIVEN" ]; then
       	 echo "No hash given!"
@@ -73,6 +76,9 @@ if [[ -n "$yubikey_info" ]]; then
       fi
       docker run --device=/dev/bus/usb/$usb_bus/$usb_device -i yubikey /bin/bash -c "./verify.sh $HASH $SGN"
       exit $?
+  fi
+  if [ ! -z "$BSH" ]; then
+      docker run --privileged --device=/dev/bus/usb/$usb_bus/$usb_device -it yubikey /bin/bash
   fi
 
 else

@@ -5,6 +5,8 @@ FROM ubuntu:latest
 
 RUN apt-get update && apt-get install -y apt-transport-https
 
+RUN apt install -y software-properties-common
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     openssl \
@@ -14,6 +16,10 @@ RUN apt-get update && apt-get install -y \
     libpcsclite-dev \
     xxd \
     && rm -rf /var/lib/apt/lists/*
+
+# Install the ykman for the config
+RUN add-apt-repository ppa:yubico/stable && apt update
+RUN apt-get install -y yubikey-manager yubikey-personalization
 
 # Copy the udev rules for USB device access
 COPY 99-usb.rules /etc/udev/rules.d/
