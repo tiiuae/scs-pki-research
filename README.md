@@ -76,7 +76,7 @@ Generate SHA256 hash
 
 1e648d85a8ca1c6f55fcc060bbcbd24a4ff2deb5844e198088689ca840f3337a  0r434a8n04i14s4sp3fam23cplwyn1iw-generic-x86_64-debug-nixos.img`
 
-Sign the hash with Yubikey
+Sign the hash with the Yubikey
 
 `$ ./start.sh --sign --h=1e648d85a8ca1c6f55fcc060bbcbd24a4ff2deb5844e198088689ca840f3337a
 
@@ -100,7 +100,7 @@ Using slot 0 with a present token (0x0)
 Using signature algorithm ECDSA
 Signature is valid`
 
-Verify signature (Invalid case)
+Verify the signature (Invalid case)
 
 `$ ./start.sh --verify --h=1e648d85a8ca1c6f55fcc060bbcbd24a4ff2deb5844e198088689ca840f3337b --sg=499OENQ5B08XVLL4nBJdeoWfYl2TbQEatp1SxeDMnqf527ie6OVBrNCh9SmfCD24rw6v/C/QQ13OOBHBehKQEA==
 
