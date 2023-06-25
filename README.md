@@ -4,7 +4,7 @@
 -->
 
 
-# Provisioning Yubikey.
+# Provisioning Yubikey
 
 
 Start bash on the container (makes life easier)
@@ -38,7 +38,7 @@ Your YubiKey now has the default PIN, PUK and Management Key:
 	PUK:	12345678
 	Management Key:	010203040506070801020304050607080102030405060708`
 
-Set the PIN
+Set the PIN:
 
 `root@dd59f95cbd4e:/app# ykman piv access change-pin
 
@@ -60,6 +60,7 @@ Enter the new management key:
 
 Repeat for confirmation:`
 
+
 Generate the keypair and the cert for signing (remember to update the pin, corresponding to the pin set in previous steps)
 
 `ykman piv keys generate --pin 123456 -a ECCP256 -F PEM 0x9C pubkey.pem`
@@ -68,15 +69,17 @@ Generate the keypair and the cert for signing (remember to update the pin, corre
 
 The pubkey.pem is the public key for the verefication part (also present on the Yubikey now).
 
-# Example signing:
 
-Generate SHA256 hash
+# Example signing
+
+
+Generate SHA256 hash:
 
 `$ sha256sum 0r434a8n04i14s4sp3fam23cplwyn1iw-generic-x86_64-debug-nixos.img 
 
 1e648d85a8ca1c6f55fcc060bbcbd24a4ff2deb5844e198088689ca840f3337a  0r434a8n04i14s4sp3fam23cplwyn1iw-generic-x86_64-debug-nixos.img`
 
-Sign the hash with the Yubikey
+Sign the hash with the Yubikey:
 
 `$ ./start.sh --sign --h=1e648d85a8ca1c6f55fcc060bbcbd24a4ff2deb5844e198088689ca840f3337a
 
@@ -84,9 +87,10 @@ YubiKey found on a USB Bus: 003, Device: 002
 
 499OENQ5B08XVLL4nBJdeoWfYl2TbQEatp1SxeDMnqf527ie6OVBrNCh9SmfCD24rw6v/C/QQ13OOBHBehKQEA==`
 
-Verify the signature (Valid case)
+Verify the signature (Valid case):
 
 Note that output might differ. The main part is "Signature is valid" or "Invalid signature" line.
+
 
 `alex@alex-unikie:~/repos/scs-pki-research/yubikey$ ./start.sh --verify --h=1e648d85a8ca1c6f55fcc060bbcbd24a4ff2deb5844e198088689ca840f3337a --sg=499OENQ5B08XVLL4nBJdeoWfYl2TbQEatp1SxeDMnqf527ie6OVBrNCh9SmfCD24rw6v/C/QQ13OOBHBehKQEA==
 
@@ -100,7 +104,9 @@ Using slot 0 with a present token (0x0)
 Using signature algorithm ECDSA
 Signature is valid`
 
-Verify the signature (Invalid case)
+
+Verify the signature (Invalid case):
+
 
 `$ ./start.sh --verify --h=1e648d85a8ca1c6f55fcc060bbcbd24a4ff2deb5844e198088689ca840f3337b --sg=499OENQ5B08XVLL4nBJdeoWfYl2TbQEatp1SxeDMnqf527ie6OVBrNCh9SmfCD24rw6v/C/QQ13OOBHBehKQEA==
 

@@ -3,12 +3,10 @@
 
 FROM ubuntu:latest
 
-RUN apt-get update && apt-get install -y apt-transport-https
-
-RUN apt install -y software-properties-common
-
 # Install dependencies
-RUN apt-get update && apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+    software-properties-common \
+    apt-transport-https \
     openssl \
     pcscd \
     libengine-pkcs11-openssl \
@@ -19,22 +17,22 @@ RUN apt-get update && apt-get install -y \
 
 # Install the ykman for the config
 RUN add-apt-repository ppa:yubico/stable && apt update
-RUN apt-get install -y yubikey-manager yubikey-personalization
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y yubikey-manager yubikey-personalization
 
 # Copy the udev rules for USB device access
-COPY 99-usb.rules /etc/udev/rules.d/
+COPY dock/99-usb.rules /etc/udev/rules.d/
 
 # Set environment variables
 ENV OPENSSL_CONF=/etc/ssl/openssl.cnf
 
 # Copy YubiKey OpenSSL configuration file
-COPY yubikey_openssl.cnf /etc/ssl/openssl.cnf
+COPY dock/yubikey_openssl.cnf /etc/ssl/openssl.cnf
 
 # Set working directory
 WORKDIR /app
 
-COPY sign.sh /app
-COPY verify.sh /app
+COPY dock/sign.sh /app
+COPY dock/verify.sh /app
 RUN chmod +x /app/sign.sh
 RUN chmod +x /app/verify.sh
 
