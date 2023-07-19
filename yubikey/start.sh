@@ -65,7 +65,7 @@ if [[ -n "$yubikey_info" ]]; then
       	 echo "No hash given!"
 	 exit 1
       fi
-      docker run --device=/dev/bus/usb/$usb_bus/$usb_device -it yubikey ./sign.sh $HASH
+      docker run --device=/dev/bus/usb/$usb_bus/$usb_device -t yubikey ./sign.sh $HASH
       exit $?
   fi
 
@@ -74,7 +74,7 @@ if [[ -n "$yubikey_info" ]]; then
 	  "No hash or signature given!"
 	  exit 1
       fi
-      docker run --device=/dev/bus/usb/$usb_bus/$usb_device -i yubikey /bin/bash -c "./verify.sh $HASH $SGN"
+      docker run --device=/dev/bus/usb/$usb_bus/$usb_device yubikey /bin/bash -c "./verify.sh $HASH $SGN"
       exit $?
   fi
   if [ ! -z "$BSH" ]; then
