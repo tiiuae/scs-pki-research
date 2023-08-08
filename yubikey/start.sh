@@ -3,49 +3,85 @@
 # SPDX-FileCopyrightText: 2023 Technology Innovation Institute (TII)
 # SPDX-License-Identifier: Apache-2.0
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 [OPT...] CMD"
+# Allow override of the container name for testing purposes
+CONTAINER="${CONTAINER:-yubikey}"
+
+function Show_help {
     echo ""
-    echo "  OPT = Option"
+    echo "Usage: $0 CMD [OPT...]"
+    echo ""
     echo "  CMD = Command"
+    echo "  OPT = Option"
     echo ""
-    echo "  Options:"
-    echo "    --sign      = Sign the binary using the hash"
-    echo "    --verify    = Verify the signature"
-    echo "    --h=HSH     = Set the hash for signing or verification"
-    echo "    --sg=SGN    = Set the signature for verification (b64 format)"
+    echo "Commands:"
+    echo "          sign = Sign the binary using the hash"
+    echo "        verify = Verify the signature"
+    echo "          bash = Open bash shell into container"
+    echo "   --help|help = Show this help"
+    echo "  check-script = Check script itself with shellcheck and bashate"
     echo ""
-    echo "  Example:"
+    echo "Options:"
+    echo "  -h=HASH|--hash=HASH = Set the hash for signing or verification"
+    echo "  -s=SIGN|--sign=SIGN = Set the signature for verification"
     echo ""
-    echo "$0 --sign -h 35b5d3b9746967f4c1984f90d9ccccda6862abd8dc2546a9b8c663c610696617 > signature.b64"
+    echo "Examples:"
     echo ""
-    echo "$0 --verify --h 35b5d3b9746967f4c1984f90d9ccccda6862abd8dc2546a9b8c663c610696617 -sg signature.b64"
+    echo "  $0 sign -h=35b5d3b9746967f4c1984f90d9ccccda6862abd8dc2546a9b8c663c610696617 > signature.b64"
+    echo "  $0 verify -h=35b5d3b9746967f4c1984f90d9ccccda6862abd8dc2546a9b8c663c610696617 \"-s=\$(<signature.b64)\""
+    echo ""
+}
+
+case "$1" in
+sign|verify|bash)
+    CMD="$1"
+;;
+check-script)
+    # Just to check for errors on development environment that has shellcheck and bashate installed
+    if shellcheck --help > /dev/null 2>&1 && bashate --help > /dev/null 2>&1; then
+        if shellcheck "$0" && bashate -i E006 "$0"; then
+            echo "Nothing to complain"
+            exit 0
+        fi
+    else
+        echo "Please install shellcheck and bashate to use check-script functionality"
+    fi
     exit 1
-fi
+;;
+--help|help)
+    Show_help
+    exit 0
+;;
+*)
+    if [ -z "$1" ]; then
+        echo "No command given!" >&2
+    else
+        echo "Invalid command: $1" >&2
+    fi
+    Show_help >&2
+    exit 1
+;;
+esac
 
-while [[ $1 == --* ]]; do
+shift
+
+while [ -n "$1" ]; do
     case "$1" in
-    --sign)
-	SIGN=1
+    --hash=*)
+        HASH="${1##--hash=}"
     ;;
-
-    --verify)
-	VERIFY=1
+    -h=*)
+        HASH="${1##-h=}"
     ;;
-    --bash)
-	BSH=1
+    --sign=*)
+        SIGN="${1##--sign=}"
     ;;
-    --h=*)
-	HASH="${1##--h=}"
-	HASHGIVEN=1
+    -s=*)
+        SIGN="${1##-s=}"
     ;;
-    --sg=*)
-	SGN="${1##--sg=}"
-	SGNGIVEN=1
-    ;;
-    --*)
+    *)
         echo "Unknown option: $1"
         exit 1
+    ;;
     esac
     shift
 done
@@ -55,32 +91,34 @@ done
 yubikey_info=$(lsusb -d 1050: | awk '{print $2, $4}' | sed 's/://')
 
 if [[ -n "$yubikey_info" ]]; then
-  # Extract the USB bus and device numbers
-  usb_bus=$(echo "$yubikey_info" | cut -d ' ' -f 1)
-  usb_device=$(echo "$yubikey_info" | cut -d ' ' -f 2)
+    # Extract the USB bus and device numbers
+    usb_bus=$(echo "$yubikey_info" | cut -d ' ' -f 1)
+    usb_device=$(echo "$yubikey_info" | cut -d ' ' -f 2)
 
-  echo "YubiKey found on a USB Bus: $usb_bus, Device: $usb_device"
-  if [ ! -z "$SIGN" ]; then
-      if [ -z "$HASHGIVEN" ]; then
-      	 echo "No hash given!"
-	 exit 1
-      fi
-      docker run --device=/dev/bus/usb/$usb_bus/$usb_device -t yubikey ./sign.sh $HASH
-      exit $?
-  fi
+    echo "YubiKey found on a USB Bus: ${usb_bus}, Device: $usb_device" >&2
 
-  if [ ! -z "$VERIFY" ]; then
-      if [ -z "$HASHGIVEN" ] || [ -z "$SGNGIVEN" ]; then
-	  "No hash or signature given!"
-	  exit 1
-      fi
-      docker run --device=/dev/bus/usb/$usb_bus/$usb_device yubikey /bin/bash -c "./verify.sh $HASH $SGN"
-      exit $?
-  fi
-  if [ ! -z "$BSH" ]; then
-      docker run --privileged --device=/dev/bus/usb/$usb_bus/$usb_device -it yubikey /bin/bash
-  fi
-
+    case "$CMD" in
+    sign)
+        if [ -z "$HASH" ]; then
+            echo "No hash given!" >&2
+            exit 1
+        fi
+        docker run "--device=/dev/bus/usb/${usb_bus}/${usb_device}" "$CONTAINER" ./sign.sh "$HASH"
+        exit
+    ;;
+    verify)
+        if [ -z "$HASH" ] || [ -z "$SIGN" ]; then
+            echo "No hash or signature given!" >&2
+            exit 1
+        fi
+        docker run "--device=/dev/bus/usb/${usb_bus}/${usb_device}" "$CONTAINER" ./verify.sh "$HASH" "$SIGN"
+        exit
+    ;;
+    bash)
+        docker run "--device=/dev/bus/usb/${usb_bus}/${usb_device}" -it "$CONTAINER" /bin/bash
+        exit
+    ;;
+    esac
 else
-  echo "YubiKey not found"
+    echo "YubiKey not found" >&2
 fi
