@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2023 Technology Innovation Institute (TII)
+# SPDX-License-Identifier: Apache-2.0
+
+# yubikey_openssl.cnf
+
+openssl_conf = openssl_init
+
+[openssl_init]
+engines = engine_section
+
+[engine_section]
+pkcs11 = pkcs11_section
+
+[pkcs11_section]
+engine_id = pkcs11
+dynamic_path = /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so
+MODULE_PATH = /usr/lib/x86_64-linux-gnu/pkcs11/
+PIN = 81728172
+init = 0

@@ -1,0 +1,2 @@
+# Grant access to the YubiKey USB device
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1050", ATTRS{idProduct}=="0407", MODE="0666"
