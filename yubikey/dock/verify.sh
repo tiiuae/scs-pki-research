@@ -23,7 +23,7 @@ fi
 xxd -r -p <<< "$HASH" > digest.bin
 base64 --decode <<< "$SIGN" > signature.bin
 
-RESULT="$(pkcs11-tool --verify --id 02 --input-file digest.bin --signature-file signature.bin --pin 81728172)"
+RESULT="$(pkcs11-tool --verify --signature-format openssl -m ECDSA-SHA256 --id 02 --input-file digest.bin --signature-file signature.bin --pin 81728172)"
 
 if [[ $RESULT =~ .*Signature\ is\ valid.* ]]; then
     echo "Signature is valid"
