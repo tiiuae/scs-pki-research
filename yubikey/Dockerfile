@@ -17,7 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
 
 # Install the ykman for the config
 RUN add-apt-repository ppa:yubico/stable && apt update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y yubikey-manager yubikey-personalization
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y yubikey-manager yubikey-personalization ykcs11
 
 # Copy the udev rules for USB device access
 COPY dock/99-usb.rules /etc/udev/rules.d/
