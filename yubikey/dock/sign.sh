@@ -19,7 +19,7 @@ fi
 
 xxd -r -p <<< "$HASH" > digest.bin
 
-pkcs11-tool --sign --signature-format openssl -m ECDSA-SHA256 --id 02 -i digest.bin --output-file data.sig --pin 81728172 >/dev/null
+pkcs11-tool --module /usr/lib/x86_64-linux-gnu/libykcs11.so --sign --signature-format openssl -m ECDSA-SHA256 --id 02 -i digest.bin --output-file data.sig --pin 81728172 >/dev/null
 SIGN="$(base64 --wrap=0 data.sig)"
 # Remove carriage returns (just in case)
 SIGN="${SIGN//$'\r'/}"

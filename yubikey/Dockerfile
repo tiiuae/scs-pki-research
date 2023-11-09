@@ -13,6 +13,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     opensc \
     libpcsclite-dev \
     xxd \
+    ykcs11 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install the ykman for the config
