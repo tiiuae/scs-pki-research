@@ -25,6 +25,8 @@ pip install azure-keyvault azure-identity
   ];
 ```
 
+Please change python38 to match your python version.
+
 ### Script Descriptions
 
 #### 1\. `kv_export_key.py`
