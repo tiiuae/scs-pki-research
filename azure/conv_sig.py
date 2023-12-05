@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Technology Innovation Institute (TII)
+# SPDX-License-Identifier: Apache-2.0
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import hashes
