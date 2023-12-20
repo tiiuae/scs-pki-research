@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # SPDX-FileCopyrightText: 2023 Technology Innovation Institute (TII)
 # SPDX-License-Identifier: Apache-2.0
 
 # Allow override of the container name for testing purposes
-CONTAINER="${CONTAINER:-yubikey}"
+CONTAINER="${CONTAINER:-yubi}"
 
 function Show_help {
     echo ""
@@ -103,7 +103,7 @@ if [[ -n "$yubikey_info" ]]; then
             echo "No hash given!" >&2
             exit 1
         fi
-        docker run "--device=/dev/bus/usb/${usb_bus}/${usb_device}" "$CONTAINER" ./sign.sh "$HASH"
+        docker run --rm "--device=/dev/bus/usb/${usb_bus}/${usb_device}" "$CONTAINER" ./sign.sh "$HASH"
         exit
     ;;
     verify)
@@ -111,11 +111,11 @@ if [[ -n "$yubikey_info" ]]; then
             echo "No hash or signature given!" >&2
             exit 1
         fi
-        docker run "--device=/dev/bus/usb/${usb_bus}/${usb_device}" "$CONTAINER" ./verify.sh "$HASH" "$SIGN"
+        docker run --rm --device="/dev/bus/usb/${usb_bus}/${usb_device}" "$CONTAINER" ./verify.sh "$HASH" "$SIGN"
         exit
     ;;
     bash)
-        docker run "--device=/dev/bus/usb/${usb_bus}/${usb_device}" -it "$CONTAINER" /bin/bash
+        docker run --rm --device="/dev/bus/usb/${usb_bus}/${usb_device}" -it "$CONTAINER" /bin/bash
         exit
     ;;
     esac
