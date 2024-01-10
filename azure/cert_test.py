@@ -13,10 +13,10 @@ from azure.keyvault.keys.crypto import CryptographyClient, SignatureAlgorithm
 # Keyvault specific data for token generation
 #
 # THIS IS FOR DEMO ONLY! DO NOT HARDCODE ANY AUTH MATERIAL IN PRODUCTION CODE!
-TENANT_ID = "940b453b-bd86-48b7-af38-f2ed0878bcb2"
-CLIENT_ID = "812d89e9-b424-45d9-9305-d037087d52ae"
-CLIENT_SECRET = "cEx8Q~qRWY_paX5BMi_X9UiVQoQ_vTW~PB.0Fc1c"
-KEYVAULT_URL = "https://ppc-test-kv2.vault.azure.net/"
+TENANT_ID = ""
+CLIENT_ID = ""
+CLIENT_SECRET = ""
+KEYVAULT_URL = ""
 
 credential = ClientSecretCredential(TENANT_ID, CLIENT_ID, CLIENT_SECRET)
 
