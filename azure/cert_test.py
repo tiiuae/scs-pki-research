@@ -13,6 +13,7 @@ from azure.keyvault.keys.crypto import CryptographyClient, SignatureAlgorithm
 # Keyvault specific data for token generation
 #
 # THIS IS FOR DEMO ONLY! DO NOT HARDCODE ANY AUTH MATERIAL IN PRODUCTION CODE!
+#
 TENANT_ID = ""
 CLIENT_ID = ""
 CLIENT_SECRET = ""
