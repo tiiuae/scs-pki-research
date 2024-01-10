@@ -1,41 +1,46 @@
-# SPDX-FileCopyrightText: 2023 Technology Innovation Institute (TII)
+# SPDX-FileCopyrightText: 2024 Technology Innovation Institute (TII)
 # SPDX-License-Identifier: Apache-2.0
 
-from azure.identity import ClientSecretCredential                                                                                                                            
-from azure.keyvault.certificates import CertificateClient, CertificatePolicy
+"""Demo script for cert based signing with keyvault"""
+
 import hashlib
+
+from azure.identity import ClientSecretCredential
+from azure.keyvault.certificates import CertificateClient
 from azure.keyvault.keys import KeyClient
 from azure.keyvault.keys.crypto import CryptographyClient, SignatureAlgorithm
 
-# Keyvault specific data for token generation                                                                                       
-tenant_id = ""
-client_id = ""
-client_secret = ""
-key_vault_url = ""
+# Keyvault specific data for token generation
+#
+# THIS IS FOR DEMO ONLY! DO NOT HARDCODE ANY AUTH MATERIAL IN PRODUCTION CODE!
+TENANT_ID = "940b453b-bd86-48b7-af38-f2ed0878bcb2"
+CLIENT_ID = "812d89e9-b424-45d9-9305-d037087d52ae"
+CLIENT_SECRET = "cEx8Q~qRWY_paX5BMi_X9UiVQoQ_vTW~PB.0Fc1c"
+KEYVAULT_URL = "https://ppc-test-kv2.vault.azure.net/"
 
-credential = ClientSecretCredential(tenant_id, client_id, client_secret)
+credential = ClientSecretCredential(TENANT_ID, CLIENT_ID, CLIENT_SECRET)
 
 # Certificate to be used
-certificate_name = "GhafSCSTest2"
+CERTIFICATE_NAME = "GhafSCSTest2"
 
 # Instantiate a certificate client & key client to derive the key
 # corresponding to the certificate
-certificate_client = CertificateClient(vault_url=key_vault_url, credential=credential)
-key_client = KeyClient (vault_url=key_vault_url, credential=credential)
+certificate_client = CertificateClient(vault_url=KEYVAULT_URL, credential=credential)
+key_client = KeyClient (vault_url=KEYVAULT_URL, credential=credential)
 
-certificate = certificate_client.get_certificate(certificate_name)
+certificate = certificate_client.get_certificate(CERTIFICATE_NAME)
 
 print(certificate.name)
 print(certificate.properties.version)
 
-key = key_client.get_key(certificate_name)
+key = key_client.get_key(CERTIFICATE_NAME)
 
 # Instantiate Cryptography client with the certificate private key
 crypto_client = CryptographyClient(key, credential)
 
 # Digest and hash a simple text
-digest = hashlib.sha256(b"mytext").digest()
-result = crypto_client.sign(SignatureAlgorithm.es256, digest)
+DIGEST = hashlib.sha256(b"mytext").digest()
+result = crypto_client.sign(SignatureAlgorithm.es256, DIGEST)
 
 print (result.key_id)
 print (result.algorithm)
@@ -44,6 +49,6 @@ print(signature)
 print ("-------------------------")
 
 # Verify the signature
-result = crypto_client.verify(SignatureAlgorithm.es256, digest, signature)
+result = crypto_client.verify(SignatureAlgorithm.es256, DIGEST, signature)
 print ("Verification result: ", result.is_valid)
 assert result.is_valid
